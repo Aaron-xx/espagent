@@ -1,0 +1,77 @@
+# Pre-commit configuration template
+# See https://pre-commit.com for more information
+#
+# Installation:
+#   pip install -e ".[dev]"
+#   pre-commit install
+#
+# Usage:
+#   Automatically runs on `git commit`
+#   Skip: git commit --no-verify
+#   Run manually: pre-commit run --all-files
+
+default_language_version:
+  python: python3.12
+
+# Set PATH to include virtual environment
+default_stages: [pre-commit]
+
+repos:
+  # --- Official pre-commit hooks ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: detect-private-key
+      - id: mixed-line-ending
+
+  # --- Python linting and formatting ---
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff lint
+        entry: ruff check
+        language: system
+        types: [python]
+        args: [--fix]
+
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format
+        language: system
+        types: [python]
+
+  # --- Security checks ---
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-no-eval
+      - id: python-use-type-annotations
+
+  # --- Custom sensitive data detection ---
+  - repo: local
+    hooks:
+      - id: detect-secrets
+        name: detect sensitive information
+        entry: bash -c 'grep -rnE "(sk-[a-zA-Z0-9]{32,}|ghp_[a-zA-Z0-9]{36,}|AKIA[0-9A-Z]{16})" $(git diff --cached --name-only --diff-filter=AM) 2>/dev/null || exit 0'
+        language: system
+        pass_filenames: false
+
+  # --- Tests ---
+  - repo: local
+    hooks:
+      - id: pytest
+        name: run tests
+        entry: pytest -q
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
