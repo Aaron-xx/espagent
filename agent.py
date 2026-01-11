@@ -17,12 +17,9 @@ logger = logging.getLogger(__name__)
 # Load API KEY from environment
 load_dotenv(override=True)
 
-DB_URI = os.getenv("DATABASE_URL")
-if not DB_URI:
-    raise ValueError(
-        "DATABASE_URL environment variable not set. "
-        "Please set it to your PostgreSQL connection string."
-    )
+DB_URI = os.getenv(
+    "DATABASE_URL", "postgresql://langchain:langchain_postgres@192.168.50.244:5432/langchain"
+)
 
 # Alternative DB URI for Docker environments:
 # DB_URI = os.getenv(
